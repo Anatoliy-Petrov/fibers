@@ -1,0 +1,42 @@
+services:
+  app:
+    image: php:8.3-fpm
+    working_dir: /var/www/fibers
+    volumes:
+      - .:/var/www/fibers
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      DB_HOST: mysql
+      REDIS_HOST: redis
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/fibers
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: fibers
+      MYSQL_USER: fibers
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  mysql_data:
